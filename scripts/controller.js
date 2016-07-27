@@ -11,7 +11,7 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
  	$scope.onuse = [];
  	$scope.tools = false;
  	$scope.loged_out = false;
- 	var socket = io.connect($scope.base_url+':3000');
+ 	var socket = io.connect($scope.base_url+':8080');
  	//initial actions
  	$(".hello").addClass("show");
  	$scope.submit = function(e){
@@ -101,7 +101,11 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
  			$scope.postConnection(con);
  			$scope.connections.push(con);
  			if ($scope.loged_out){
- 				 socket = io.connect($scope.base_url+':3000',{'forceNew':true });
+ 				 socket = io.connect($scope.base_url+':8080',{
+					 'forceNew':true,
+					"transports": ["polling"],
+						"polling duration": 10
+				 });
  				 $scope.online_user.push($scope.user);
  			}
  			socket.emit('new_client', $scope.user);
@@ -111,7 +115,7 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
  	//get start data from rest api
  	$http({
 	  method: 'GET',
-	  url: $scope.base_url+':3030/api/messages'
+	  url: $scope.base_url+':8080/api/messages'
 	}).then(function successCallback(response) {
 	    if(response.data){
 	    	$scope.messages = response.data;
@@ -123,7 +127,7 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
 	$scope.postMessage = function(data){
 	$http({
 	    method: 'POST',
-	    url: $scope.base_url+':3030/api/message',
+	    url: $scope.base_url+':8080/api/message',
 	    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 	    transformRequest: function(obj) {
 	        var str = [];
@@ -141,7 +145,7 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
 	//connections data from restapi
  	$http({
 	  method: 'GET',
-	  url: $scope.base_url+':3030/api/connections'
+	  url: $scope.base_url+':8080/api/connections'
 	}).then(function successCallback(response) {
 	    if(response.data) $scope.connections = response.data;
 	}, function errorCallback(response) {
@@ -150,7 +154,7 @@ app.controller("dashboardCtrl", function($scope, $timeout, $interval, $animate, 
 	$scope.postConnection = function(data){
 	$http({
 	    method: 'POST',
-	    url: $scope.base_url+':3030/api/connection',
+	    url: $scope.base_url+':8080/api/connection',
 	    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 	    transformRequest: function(obj) {
 	        var str = [];

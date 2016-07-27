@@ -2,7 +2,6 @@ var fs = require('fs');
 var path = require('path');
 var express    = require('express');        
 var app        = express();
-var rest        = express();                   
 var bodyParser = require('body-parser');  
 
 //frontend-----------------------------------------
@@ -13,22 +12,21 @@ var router = express.Router();
 app.use('/', express.static(path.join(__dirname, 'html')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/scripts', express.static(path.join(__dirname, 'scripts')));
-app.listen(port, '0.0.0.0');
-console.log('frontend on port: '+port);
+var server=app.listen(port, function(){
+  console.log('app listen on port: '+port);
+});
+
 
 //restAPI-----------------------------------------
 var messages_file = path.join(__dirname, 'scripts/messages.json');
 
-rest.use(bodyParser.urlencoded({ extended: true }));
-rest.use(bodyParser.json());
 
-rest.use(function(req, res, next) {
+app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-var port = process.env.PORT || 3030;  
 var router_rest = express.Router();
 // messages api
 router_rest.get('/messages', function(req, res) {
@@ -114,18 +112,14 @@ router_rest.post('/connection', function(req, res) {
   res.json({message: "Data sucessfully added" });
 });
 
-rest.use('/api', router_rest);
-rest.listen(port, '0.0.0.0');
-console.log('restAPI started on port: '+port);
+app.use('/api', router_rest);
 
 //Socket io real time comunication----------------
-var chat = require('express')();
-var server = require('http').createServer(chat);
-var io = require('socket.io')(server);
-var port = process.env.PORT || 3000;
-server.listen(port, function () {
-  console.log('Socket io listening at port %d', port);
+var io = require('socket.io')(server,{
+  "transports": ["polling"],
+  "polling duration": 10
 });
+
 var totalClients = 0;
 var usersOnline = [];
 io.on('connection', function (socket) {
